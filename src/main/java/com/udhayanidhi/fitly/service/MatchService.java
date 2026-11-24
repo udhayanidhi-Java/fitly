@@ -16,11 +16,15 @@ import java.util.regex.Pattern;
 @Service
 public class MatchService {
     private static final List<String> SKILLS = List.of(
-        "java", "javascript", "python", "c++", "spring boot", "spring security", "hibernate",
-        "jpa", "jdbc", "servlet", "rest api", "microservices", "mysql", "postgresql", "mongodb",
-        "sql", "docker", "kubernetes", "aws", "azure", "jenkins", "ci/cd", "git", "github",
-        "maven", "junit", "html", "css", "react", "angular", "jquery", "kafka", "redis",
-        "agile", "scrum", "linux"
+        "java", "javascript", "typescript", "python", "c++", "c#", "go", "kotlin",
+        "spring boot", "spring security", "spring data", "spring", "hibernate", "jpa", "jdbc",
+        "servlet", "rest api", "graphql", "microservices", "node.js", "react", "angular", "vue",
+        "html", "css", "jquery", "mysql", "postgresql", "mongodb", "oracle", "sql", "nosql",
+        "dynamodb", "redis", "kafka", "rabbitmq", "docker", "kubernetes", "terraform",
+        "aws", "ec2", "s3", "lambda", "azure", "gcp", "jenkins", "ci/cd", "git", "github",
+        "maven", "gradle", "junit", "mockito", "selenium", "linux", "agile", "scrum",
+        "data structures", "algorithms", "object-oriented", "oop", "design patterns",
+        "system design", "distributed systems", "multithreading", "unit testing"
     );
 
     private final ResumeRepository resumeRepository;
@@ -41,8 +45,8 @@ public class MatchService {
         JobDescription job = jobRepository.findById(request.getJobId())
             .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
-        String resumeText = resume.getContent().toLowerCase();
-        String jobText = job.getDescription().toLowerCase();
+        String resumeText = normalize(resume.getContent());
+        String jobText = normalize(job.getDescription());
 
         List<String> matched = new ArrayList<>();
         List<String> missing = new ArrayList<>();
@@ -67,6 +71,19 @@ public class MatchService {
 
     public List<MatchResult> getByResume(Long resumeId) {
         return matchRepository.findByResumeId(resumeId);
+    }
+
+    private String normalize(String text) {
+        return text.toLowerCase()
+            .replace("mongo db", "mongodb")
+            .replace("postgres sql", "postgresql")
+            .replace("postgres", "postgresql")
+            .replace("restful", "rest api")
+            .replace("object oriented", "object-oriented")
+            .replace("ci cd", "ci/cd")
+            .replace("nodejs", "node.js")
+            .replace("data structure ", "data structures ")
+            .replace("algorithm ", "algorithms ");
     }
 
     private boolean contains(String text, String skill) {

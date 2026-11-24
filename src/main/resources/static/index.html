@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fitly - Resume Matcher</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; background: #f4f6fb; margin: 0; padding: 24px; color: #1f2937; }
+  .card { max-width: 640px; margin: 0 auto; background: #fff; padding: 28px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  h1 { margin: 0 0 4px; color: #4f46e5; }
+  p.sub { margin: 0 0 20px; color: #6b7280; }
+  label { display: block; margin: 14px 0 6px; font-weight: bold; font-size: 14px; }
+  input, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+  textarea { height: 140px; resize: vertical; }
+  button { margin-top: 18px; width: 100%; padding: 12px; background: #4f46e5; color: #fff; border: 0; border-radius: 8px; font-size: 16px; cursor: pointer; }
+  button:disabled { background: #a5b4fc; cursor: wait; }
+  #error { color: #b91c1c; margin-top: 14px; display: none; }
+  #result { margin-top: 24px; display: none; }
+  .score { font-size: 48px; font-weight: bold; text-align: center; }
+  .bar { height: 12px; background: #e5e7eb; border-radius: 6px; overflow: hidden; margin: 8px 0 20px; }
+  .fill { height: 100%; width: 0; background: #22c55e; transition: width .6s; }
+  .tag { display: inline-block; padding: 4px 10px; margin: 3px; border-radius: 999px; font-size: 13px; }
+  .ok { background: #dcfce7; color: #166534; }
+  .miss { background: #fee2e2; color: #991b1b; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Fitly</h1>
+  <p class="sub">See how well your resume matches a job.</p>
+
+  <label>Your resume (PDF)</label>
+  <input type="file" id="resume" accept="application/pdf">
+
+  <label>Job title</label>
+  <input type="text" id="title" placeholder="Java Developer">
+
+  <label>Company</label>
+  <input type="text" id="company" placeholder="Acme">
+
+  <label>Job description</label>
+  <textarea id="description" placeholder="Paste the job description here"></textarea>
+
+  <button id="go">Match my resume</button>
+  <div id="error"></div>
+
+  <div id="result">
+    <div class="score" id="score"></div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <strong>Matched skills</strong>
+    <div id="matched"></div>
+    <br>
+    <strong>Missing skills</strong>
+    <div id="missing"></div>
+  </div>
+</div>
+
+<script>
+  const USER_ID = 1; // temporary until we add login
+  const btn = document.getElementById('go');
+  const errBox = document.getElementById('error');
+
+  function showError(msg) { errBox.textContent = msg; errBox.style.display = 'block'; }
+
+  function fillTags(el, csv, cls) {
+    el.innerHTML = '';
+    const items = csv ? csv.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (items.length === 0) { el.textContent = 'None'; return; }
+    items.forEach(s => {
+      const span = document.createElement('span');
+      span.className = 'tag ' + cls;
+      span.textContent = s;
+      el.appendChild(span);
+    });
+  }
+
+  async function readJson(res) {
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || Object.values(data).join(', ') || 'Request failed');
+    return data;
+  }
+
+  btn.addEventListener('click', async () => {
+    errBox.style.display = 'none';
+    document.getElementById('result').style.display = 'none';
+
+    const file = document.getElementById('resume').files[0];
+    const title = document.getElementById('title').value.trim();
+    const company = document.getElementById('company').value.trim();
+    const description = document.getElementById('description').value.trim();
+
+    if (!file) return showError('Please choose a PDF resume.');
+    if (!title || !description) return showError('Job title and description are required.');
+
+    btn.disabled = true;
+    btn.textContent = 'Matching...';
+    try {
+      const form = new FormData();
+      form.append('userId', USER_ID);
+      form.append('file', file);
+      const resume = await readJson(await fetch('/api/resumes', { method: 'POST', body: form }));
+
+      const job = await readJson(await fetch('/api/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: USER_ID, title, company, description })
+      }));
+
+      const match = await readJson(await fetch('/api/matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resumeId: resume.id, jobId: job.id })
+      }));
+
+      document.getElementById('score').textContent = match.score + '%';
+      document.getElementById('fill').style.width = match.score + '%';
+      fillTags(document.getElementById('matched'), match.matchedSkills, 'ok');
+      fillTags(document.getElementById('missing'), match.missingSkills, 'miss');
+      document.getElementById('result').style.display = 'block';
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Match my resume';
+    }
+  });
+</script>
+</body>
+</html>

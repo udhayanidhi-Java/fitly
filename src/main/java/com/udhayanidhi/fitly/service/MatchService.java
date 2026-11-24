@@ -65,6 +65,10 @@ public class MatchService {
         return matchRepository.save(result);
     }
 
+    public List<MatchResult> getByResume(Long resumeId) {
+        return matchRepository.findByResumeId(resumeId);
+    }
+
     private boolean contains(String text, String skill) {
         String regex = "(?<![a-z0-9])" + Pattern.quote(skill) + "s?(?![a-z0-9])";
         return Pattern.compile(regex).matcher(text).find();

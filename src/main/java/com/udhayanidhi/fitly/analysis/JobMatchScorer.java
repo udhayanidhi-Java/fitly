@@ -93,10 +93,11 @@ public class JobMatchScorer {
 
         // NEW: ask the "teacher with a red pen" for resume fixes
         List<String> fixes = ResumeFixSuggester.suggest(missing, missingKeywords, atsTips, soft.missing());
+        List<SoftSkillAdvisor.AdviceItem> softAdvice = SoftSkillAdvisor.advise(soft.requiredByJob(), soft.evidence());
         List<SkillLearningSuggester.LearnItem> learn = SkillLearningSuggester.suggest(missing);
 
         return new AnalysisReport(total, verdict(total), sections, matched, missing, missingKeywords,
-                soft, ats, rf, jr, fixes, learn);
+        		soft, ats, rf, jr, fixes, learn, softAdvice);
     }
 
     // ---------------- sections ----------------

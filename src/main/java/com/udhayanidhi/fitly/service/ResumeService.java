@@ -22,8 +22,8 @@ public class ResumeService {
         this.userRepository = userRepository;
     }
 
-    public Resume upload(Long userId, MultipartFile file) throws IOException {
-        User user = userRepository.findById(userId)
+    public Resume upload(String email, MultipartFile file) {
+        User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
@@ -31,6 +31,8 @@ public class ResumeService {
         String text;
         try (PDDocument doc = Loader.loadPDF(file.getBytes())) {
             text = new PDFTextStripper().getText(doc);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Please upload a valid PDF file");
         }
         Resume resume = new Resume();
         resume.setUser(user);

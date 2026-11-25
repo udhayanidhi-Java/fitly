@@ -17,8 +17,8 @@ public class JobService {
         this.userRepository = userRepository;
     }
 
-    public JobDescription create(JobRequest request) {
-        User user = userRepository.findById(request.getUserId())
+    public JobDescription create(String email, JobRequest request) {
+        User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
         JobDescription job = new JobDescription();
         job.setUser(user);

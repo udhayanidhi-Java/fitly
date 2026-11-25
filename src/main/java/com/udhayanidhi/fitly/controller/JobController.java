@@ -5,6 +5,7 @@ import com.udhayanidhi.fitly.model.JobDescription;
 import com.udhayanidhi.fitly.service.JobService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,7 +19,7 @@ public class JobController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public JobDescription create(@Valid @RequestBody JobRequest request) {
-        return jobService.create(request);
+    public JobDescription create(Authentication authentication, @Valid @RequestBody JobRequest request) {
+        return jobService.create(authentication.getName(), request);
     }
 }

@@ -3,10 +3,9 @@ package com.udhayanidhi.fitly.controller;
 import com.udhayanidhi.fitly.model.Resume;
 import com.udhayanidhi.fitly.service.ResumeService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/resumes")
@@ -19,7 +18,7 @@ public class ResumeController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Resume upload(@RequestParam Long userId, @RequestParam MultipartFile file) throws IOException {
-        return resumeService.upload(userId, file);
+    public Resume upload(Authentication authentication, @RequestParam MultipartFile file) {
+        return resumeService.upload(authentication.getName(), file);
     }
 }

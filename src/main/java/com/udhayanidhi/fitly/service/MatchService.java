@@ -39,10 +39,12 @@ public class MatchService {
         this.matchRepository = matchRepository;
     }
 
-    public MatchResult match(MatchRequest request) {
+    public MatchResult match(String email, MatchRequest request) {
         Resume resume = resumeRepository.findById(request.getResumeId())
+            .filter(r -> r.getUser().getEmail().equals(email))
             .orElseThrow(() -> new IllegalArgumentException("Resume not found"));
         JobDescription job = jobRepository.findById(request.getJobId())
+            .filter(j -> j.getUser().getEmail().equals(email))
             .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
         String resumeText = normalize(resume.getContent());
@@ -69,7 +71,10 @@ public class MatchService {
         return matchRepository.save(result);
     }
 
-    public List<MatchResult> getByResume(Long resumeId) {
+    public List<MatchResult> getByResume(String email, Long resumeId) {
+        resumeRepository.findById(resumeId)
+            .filter(r -> r.getUser().getEmail().equals(email))
+            .orElseThrow(() -> new IllegalArgumentException("Resume not found"));
         return matchRepository.findByResumeId(resumeId);
     }
 

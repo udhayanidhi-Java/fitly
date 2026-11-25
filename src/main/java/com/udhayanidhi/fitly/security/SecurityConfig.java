@@ -26,8 +26,9 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index.html", "/login.html", "/css/**", "/js/**", "/api/auth/**").permitAll()
-                .anyRequest().authenticated())
+                    .requestMatchers("/", "/index.html", "/login.html", "/css/**", "/js/**", "/api/auth/**").permitAll()
+                    .requestMatchers("/api/users", "/api/users/**").hasRole("ADMIN")
+                    .anyRequest().authenticated())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

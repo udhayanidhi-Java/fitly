@@ -13,7 +13,8 @@ public record AnalysisReport(
     AtsScorer.Report ats,
     ResumeFacts resumeFacts,
     JobRequirements jobRequirements,
-    List<String> fixes) {
+    List<String> fixes,
+    List<SkillLearningSuggester.LearnItem> learn) {
 
     // Old constructor kept so existing code still compiles
     public AnalysisReport(
@@ -26,9 +27,10 @@ public record AnalysisReport(
             SoftSkillAnalyzer.Result softSkills,
             AtsScorer.Report ats,
             ResumeFacts resumeFacts,
-            JobRequirements jobRequirements) {
+            JobRequirements jobRequirements,
+            List<String> fixes) {
         this(matchScore, verdict, sections, matchedSkills, missingSkills, missingKeywords,
-             softSkills, ats, resumeFacts, jobRequirements, List.of());
+             softSkills, ats, resumeFacts, jobRequirements, fixes, List.of());
     }
 
     public record Section(String name, int points, int max, String status, String note) {}

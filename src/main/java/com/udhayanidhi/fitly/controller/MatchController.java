@@ -1,5 +1,6 @@
 package com.udhayanidhi.fitly.controller;
 
+import com.udhayanidhi.fitly.dto.MatchDetailResponse;
 import com.udhayanidhi.fitly.dto.MatchRequest;
 import com.udhayanidhi.fitly.dto.MatchResponse;
 import com.udhayanidhi.fitly.service.MatchService;
@@ -21,8 +22,8 @@ public class MatchController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MatchResponse match(Authentication authentication, @Valid @RequestBody MatchRequest request) {
-        return MatchResponse.from(matchService.match(authentication.getName(), request));
+    public MatchDetailResponse match(Authentication authentication, @Valid @RequestBody MatchRequest request) {
+        return matchService.match(authentication.getName(), request);
     }
 
     @GetMapping("/resume/{resumeId}")

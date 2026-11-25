@@ -84,8 +84,18 @@ public class JobMatchScorer {
         for (AnalysisReport.Section s : sections) total += s.points();
         total = Math.max(0, Math.min(100, total));
 
+        // NEW: build the ATS report once and collect its tips
+        AtsScorer.Report ats = atsScorer.score(resumeText);
+        List<String> atsTips = new ArrayList<>();
+        for (var check : ats.checks()) {
+            if (check.tip() != null && !check.tip().isBlank()) atsTips.add(check.tip());
+        }
+
+        // NEW: ask the "teacher with a red pen" for resume fixes
+        List<String> fixes = ResumeFixSuggester.suggest(missing, missingKeywords, atsTips, soft.missing());
+
         return new AnalysisReport(total, verdict(total), sections, matched, missing, missingKeywords,
-            soft, atsScorer.score(resumeText), rf, jr);
+            soft, ats, rf, jr, fixes);
     }
 
     // ---------------- sections ----------------
